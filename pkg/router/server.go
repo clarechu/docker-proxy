@@ -16,6 +16,7 @@ package router
 
 import (
 	"fmt"
+	"github.com/ClareChu/docker-proxy/pkg/proxy"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "k8s.io/klog/v2"
@@ -23,7 +24,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 )
 
 type Server struct {
@@ -38,25 +38,14 @@ type Router struct {
 	methods []string
 }
 
-var (
-	routers []*Router
-	once    sync.Once
-)
-
 func AddRouter(router *mux.Router) {
-	for _, r := range routers {
-		router.PathPrefix(r.path).HandlerFunc(r.handler).Methods(r.methods...)
-	}
-}
-func Registry(handler HandlerFunc, path string, methods ...string) {
-	once.Do(func() {
-		routers = make([]*Router, 0)
-	})
-	routers = append(routers, &Router{
-		handler: handler,
-		path:    path,
-		methods: methods,
-	})
+
+	router.PathPrefix("/v2/token").HandlerFunc(proxy.TokenHandler).Methods(http.MethodGet, http.MethodPost)
+
+	router.PathPrefix("/v2").HandlerFunc(proxy.VersionHandler).Methods(http.MethodGet)
+
+	router.PathPrefix("/").HandlerFunc(proxy.OtherHandler).Methods(http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPatch, http.MethodPut)
+
 }
 
 func NewServer(root *Root) *Server {

@@ -1,36 +1,13 @@
 package proxy
 
 import (
-	"fmt"
-	"github.com/ClareChu/docker-proxy/pkg/router"
 	"io"
 	log "k8s.io/klog/v2"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 )
 
-func init() {
-	router.Registry(OtherHandler, "/", http.MethodGet,
-		http.MethodHead,
-		http.MethodPost,
-		http.MethodPut,
-		http.MethodPatch,
-		http.MethodDelete,
-		http.MethodConnect,
-		http.MethodOptions,
-		http.MethodTrace)
-}
-
-//OtherHandler
-// @ID OtherHandler
-// @Summary 反向代理所有第三方路由
-// @Description 反向代理所有第三方路由
-// @Accept  json
-// @Tags Component
-// @Success 200 {object} object  "success"
-// @Router / [get]
 func OtherHandler(w http.ResponseWriter, r *http.Request) {
 	log.Infof("Received request %s %s %s\n", r.Method, r.Host, r.RemoteAddr)
 	transport := http.DefaultTransport
@@ -42,14 +19,17 @@ func OtherHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		outReq.Header.Set("X-Forwarded-For", clientIP)
 	}
-	outReq.Host = fmt.Sprintf("%s:%s", os.Getenv("PROXY_IP"), r.URL.Port())
+	outReq.Host = "localhost:9001"
 	log.Infof("proxy url --> %s", outReq.Host)
 	outReq.URL.Host = outReq.Host
+	outReq.URL.Scheme = "http"
+	outReq.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4xMjM=")
 	res, err := transport.RoundTrip(outReq)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		return
 	}
+	defer io.Copy(w, res.Body)
 	defer res.Body.Close()
 	for key, value := range res.Header {
 		for _, v := range value {
@@ -57,5 +37,5 @@ func OtherHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(res.StatusCode)
-	io.Copy(w, res.Body)
+
 }

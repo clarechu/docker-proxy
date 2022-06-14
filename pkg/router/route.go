@@ -35,6 +35,5 @@ Example:
 func addFlag(rootCmd *cobra.Command, root *Root) {
 	rootCmd.PersistentFlags().Int32Var(&root.Port, "port", 7777, "proxy server ports")
 	rootCmd.PersistentFlags().Int32Var(&root.Timeout, "timeout", 5, "proxy server timeout")
-	rootCmd.PersistentFlags().Int32Var(&root.Timeout, "timeout", 5, "proxy server timeout")
 
 }
