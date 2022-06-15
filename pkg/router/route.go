@@ -20,7 +20,6 @@ func GetRootCmd(args []string) *cobra.Command {
 		Long: `
 Tips  Find more information at: https://github.com/clarechu/docker-proxy
 Example:
-
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			server := NewServer(root)
@@ -34,6 +33,4 @@ Example:
 
 func addFlag(rootCmd *cobra.Command, root *Root) {
 	rootCmd.PersistentFlags().Int32Var(&root.Port, "port", 7777, "proxy server ports")
-	rootCmd.PersistentFlags().Int32Var(&root.Timeout, "timeout", 5, "proxy server timeout")
-
 }

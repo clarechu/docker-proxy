@@ -11,7 +11,7 @@ import (
 
 // OtherHandler 所有其余的路由全部走这个地方
 func OtherHandler(w http.ResponseWriter, r *http.Request) {
-	log.Infof("Received request %s %s %s\n", r.Method, r.Host, r.RemoteAddr)
+	log.V(2).Infof("Received request %s %s %s\n", r.Method, r.Host, r.RemoteAddr)
 	transport := http.DefaultTransport
 	outReq := new(http.Request)
 	*outReq = *r // this only does shallow copies of maps
@@ -22,11 +22,11 @@ func OtherHandler(w http.ResponseWriter, r *http.Request) {
 		outReq.Header.Set("X-Forwarded-For", clientIP)
 	}
 	outReq.Host = "localhost:9001"
-	log.Infof("proxy url --> %s", outReq.Host)
+	log.V(2).Infof("proxy url --> %s", outReq.Host)
 	outReq.URL.Host = outReq.Host
 	// 设置权限头
 	outReq.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4xMjM=")
-	outReq.URL.Scheme = models.HttpSchema
+	outReq.URL.Scheme = models.HttpSchema.SchemaToString()
 	res, err := transport.RoundTrip(outReq)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)

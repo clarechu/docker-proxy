@@ -64,7 +64,7 @@ func NewServer(root *Root) *Server {
 }
 
 func addHTTPMiddleware(router *mux.Router) {
-	//router.Use(CORSMethodMiddleware(router))
+	router.Use(CORSMethodMiddleware(router))
 	router.Use(LogMiddleware(router))
 }
 
