@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/ClareChu/docker-proxy/pkg/models"
+	"github.com/clarechu/docker-proxy/pkg/models"
 	"github.com/spf13/cobra"
 )
 

@@ -1,4 +1,4 @@
-module github.com/ClareChu/docker-proxy
+module github.com/clarechu/docker-proxy
 
 go 1.18
 
@@ -6,6 +6,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/schema v1.2.0
 	github.com/spf13/cobra v1.4.0
 	k8s.io/klog/v2 v2.60.1
 )

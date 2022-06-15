@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "github.com/ClareChu/docker-proxy/pkg/proxy"
-	"github.com/ClareChu/docker-proxy/pkg/router"
+	_ "github.com/clarechu/docker-proxy/pkg/proxy"
+	"github.com/clarechu/docker-proxy/pkg/router"
 	"k8s.io/klog/v2"
 	"os"
 )

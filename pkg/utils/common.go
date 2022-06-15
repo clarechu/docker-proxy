@@ -2,9 +2,10 @@ package utils
 
 import (
 	"encoding/json"
-	"github.com/ClareChu/docker-proxy/pkg/utils/defaults"
+	"github.com/clarechu/docker-proxy/pkg/utils/defaults"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"io/ioutil"
 	"net/http"
 )
@@ -28,6 +29,23 @@ func GetBody(r *http.Request, i interface{}) error {
 		return err
 	}
 	err = json.Unmarshal(b, i)
+	if err != nil {
+		return err
+	}
+	if err := defaults.Set(i); err != nil {
+		return err
+	}
+	return validate.Struct(i)
+}
+
+var decoder = schema.NewDecoder()
+
+func GetBodyByForm(r *http.Request, i interface{}) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+	err = decoder.Decode(i, r.PostForm)
 	if err != nil {
 		return err
 	}

@@ -16,7 +16,7 @@ package router
 
 import (
 	"fmt"
-	"github.com/ClareChu/docker-proxy/pkg/proxy"
+	"github.com/clarechu/docker-proxy/pkg/proxy"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "k8s.io/klog/v2"
@@ -40,7 +40,8 @@ type Router struct {
 
 func AddRouter(router *mux.Router) {
 
-	router.PathPrefix("/v2/token").HandlerFunc(proxy.TokenHandler).Methods(http.MethodGet, http.MethodPost)
+	router.PathPrefix("/v2/token").HandlerFunc(proxy.TokenHandler).Methods(http.MethodGet)
+	router.PathPrefix("/v2/token").HandlerFunc(proxy.PostTokenHandler).Methods(http.MethodPost)
 
 	router.PathPrefix("/v2").HandlerFunc(proxy.VersionHandler).Methods(http.MethodGet)
 
@@ -56,9 +57,6 @@ func NewServer(root *Root) *Server {
 	srv := &http.Server{
 		Handler: handlers.LoggingHandler(os.Stdout, r),
 		Addr:    fmt.Sprintf(":%d", root.Port),
-		// Good practice: enforce timeouts for servers you create!
-		// WriteTimeout: 5 * time.Second,
-		// ReadTimeout:  5 * time.Second,
 	}
 	return &Server{
 		sv: srv,

@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"github.com/clarechu/docker-proxy/pkg/models"
 	"io"
 	log "k8s.io/klog/v2"
 	"net"
@@ -8,6 +9,7 @@ import (
 	"strings"
 )
 
+// OtherHandler 所有其余的路由全部走这个地方
 func OtherHandler(w http.ResponseWriter, r *http.Request) {
 	log.Infof("Received request %s %s %s\n", r.Method, r.Host, r.RemoteAddr)
 	transport := http.DefaultTransport
@@ -22,8 +24,9 @@ func OtherHandler(w http.ResponseWriter, r *http.Request) {
 	outReq.Host = "localhost:9001"
 	log.Infof("proxy url --> %s", outReq.Host)
 	outReq.URL.Host = outReq.Host
-	outReq.URL.Scheme = "http"
+	// 设置权限头
 	outReq.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4xMjM=")
+	outReq.URL.Scheme = models.HttpSchema
 	res, err := transport.RoundTrip(outReq)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
@@ -37,5 +40,4 @@ func OtherHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(res.StatusCode)
-
 }
