@@ -1,19 +1,19 @@
 package models
 
 type App struct {
-	RegistryType            RegistryType `json:"registryType,omitempty" default:"harbor"`
-	DockerRegistryHost      string       `json:"dockerRegistryHost" default:"auth.docker.io"`
-	Nexus                   Nexus        `json:"nexus,omitempty"`
-	Harbor                  Harbor       `json:"harbor,omitempty"`
-	DockerRegistry          Docker       `json:"dockerRegistry,omitempty"`
-	Schema                  Schema       `json:"schema,omitempty"`
-	OAuth2EventHandlerFuncs OAuth2EventHandlerFuncs
+	RegistryType            RegistryType            `json:"registryType,omitempty" default:"harbor" validate:"required"`
+	DockerRegistryHost      string                  `json:"dockerRegistryHost" default:"auth.docker.io"  validate:"required"`
+	Nexus                   Nexus                   `json:"nexus,omitempty"`
+	Harbor                  Harbor                  `json:"harbor,omitempty"`
+	DockerRegistry          Docker                  `json:"dockerRegistry,omitempty"`
+	Schema                  Schema                  `json:"schema,omitempty"`
+	OAuth2EventHandlerFuncs OAuth2EventHandlerFuncs `validate:"required"`
 }
 
 type OAuth2EventHandlerFuncs struct {
-	LoginFunc
-	CheckTokenFunc
-	PostTokenFunc
+	LoginFunc      `validate:"required"`
+	CheckTokenFunc `validate:"required"`
+	PostTokenFunc  `validate:"required"`
 }
 
 // LoginFunc 登陆的function

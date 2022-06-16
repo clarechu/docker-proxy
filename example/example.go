@@ -9,8 +9,13 @@ import (
 
 func NewApp1() *models.App {
 	return &models.App{
-		RegistryType: models.NexusRegistry,
+		DockerRegistryHost: "localhost:9001",
+		RegistryType:       models.NexusRegistry,
 		Harbor: models.Harbor{
+			Username: "admin",
+			Password: "admin123",
+		},
+		Nexus: models.Nexus{
 			Username: "admin",
 			Password: "admin123",
 		},
@@ -25,12 +30,12 @@ func NewApp1() *models.App {
 
 // LoginFunc 登陆的function
 func LoginFunc(user *models.User) (*models.OAuth2, error) {
-	password := fmt.Sprintf("Basic %s", base64.EncodeToString("admin:admin"))
-	if user.Account == "admin" && user.BasicToken == password {
+	password := fmt.Sprintf("Basic %s", base64.EncodeToString("qwer:admin"))
+	if user.Account == "qwer" && user.BasicToken == password {
 		return &models.OAuth2{
 			RefreshToken: "kas9Da81Dfa8",
 			AccessToken:  "eyJhbGciOiJFUzI1NiIsInR5",
-			ExpiresIn:    900000,
+			ExpiresIn:    900,
 		}, nil
 	}
 	return nil, errors.New("no token")

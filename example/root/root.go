@@ -9,6 +9,7 @@ import (
 
 // GetRootCmd returns the root of the cobra command-tree.
 func GetRootCmd(args []string) *cobra.Command {
+
 	root := &models.Root{
 		App: example.NewApp1(),
 	}

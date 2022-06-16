@@ -19,6 +19,7 @@ import (
 	"github.com/clarechu/docker-proxy/pkg/models"
 	"github.com/clarechu/docker-proxy/pkg/proxy"
 	"github.com/clarechu/docker-proxy/pkg/utils/base64"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "k8s.io/klog/v2"
@@ -51,10 +52,16 @@ func AddRouter(router *mux.Router, app *proxy.App) {
 
 }
 
+var validate = validator.New()
+
 func NewServer(root *models.Root) *Server {
 	//文件浏览
 	r := mux.NewRouter()
 	addHTTPMiddleware(r)
+	err := validate.Struct(root.App)
+	if err != nil {
+		panic(err)
+	}
 	AddRouter(r, buildApp(root.App))
 	srv := &http.Server{
 		Handler: handlers.LoggingHandler(os.Stdout, r),

@@ -13,11 +13,6 @@ func (a *App) TokenHandler(w http.ResponseWriter, r *http.Request) {
 	log.V(2).Infof("Received request %s %s %s\n", r.Method, r.Host, r.RemoteAddr)
 	account := utils.GetParams(r, "account")
 	auth := r.Header.Get(models.AuthorizationKey)
-	/*	password := fmt.Sprintf("Basic %s", base64.EncodeToString("admin:xxx"))
-		if account == "admin" && auth == password {
-			w.Write([]byte("{\"refresh_token\":\"kas9Da81Dfa8\",\"access_token\":\"eyJhbGciOiJFUzI1NiIsInR5\",\"expires_in\":900,\"scope\":\"\"}"))
-			w.WriteHeader(http.StatusOK)
-		}*/
 	user := &models.User{
 		Account:    account,
 		BasicToken: auth,
@@ -53,10 +48,10 @@ func (a *App) PostTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	b, err := json.Marshal(oauth2)
 	if err != nil {
+		w.Write([]byte(err.Error()))
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	w.Write(b)
 	w.WriteHeader(http.StatusOK)
-	/*	w.Write([]byte("{\"refresh_token\":\"kas9Da81Dfa8\",\"access_token\":\"eyJhbGciOiJFUzI1NiIsInR5\",\"expires_in\":900,\"scope\":\"\"}"))
-		w.WriteHeader(http.StatusOK)*/
 }
