@@ -13,10 +13,6 @@ func main() {
         App: &models.App{
         DockerRegistryHost: "localhost:9001",
         RegistryType:       models.NexusRegistry,
-        Harbor: models.Harbor{
-            Username: "admin",
-            Password: "admin123",
-        },
         Nexus: models.Nexus{
             Username: "admin",
             Password: "admin123",
