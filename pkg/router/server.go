@@ -16,7 +16,9 @@ package router
 
 import (
 	"fmt"
+	"github.com/clarechu/docker-proxy/pkg/models"
 	"github.com/clarechu/docker-proxy/pkg/proxy"
+	"github.com/clarechu/docker-proxy/pkg/utils/base64"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "k8s.io/klog/v2"
@@ -38,22 +40,22 @@ type Router struct {
 	methods []string
 }
 
-func AddRouter(router *mux.Router) {
+func AddRouter(router *mux.Router, app *proxy.App) {
 
-	router.PathPrefix("/v2/token").HandlerFunc(proxy.TokenHandler).Methods(http.MethodGet)
-	router.PathPrefix("/v2/token").HandlerFunc(proxy.PostTokenHandler).Methods(http.MethodPost)
+	router.PathPrefix("/v2/token").HandlerFunc(app.TokenHandler).Methods(http.MethodGet)
+	router.PathPrefix("/v2/token").HandlerFunc(app.PostTokenHandler).Methods(http.MethodPost)
 
-	router.PathPrefix("/v2").HandlerFunc(proxy.VersionHandler).Methods(http.MethodGet)
+	router.PathPrefix("/v2").HandlerFunc(app.VersionHandler).Methods(http.MethodGet)
 
-	router.PathPrefix("/").HandlerFunc(proxy.OtherHandler).Methods(http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPatch, http.MethodPut)
+	router.PathPrefix("/").HandlerFunc(app.OtherHandler).Methods(http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPatch, http.MethodPut)
 
 }
 
-func NewServer(root *Root) *Server {
+func NewServer(root *models.Root) *Server {
 	//文件浏览
 	r := mux.NewRouter()
 	addHTTPMiddleware(r)
-	AddRouter(r)
+	AddRouter(r, buildApp(root.App))
 	srv := &http.Server{
 		Handler: handlers.LoggingHandler(os.Stdout, r),
 		Addr:    fmt.Sprintf(":%d", root.Port),
@@ -119,4 +121,21 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// otherwise, use http.FileServer to serve the static dir
 	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
+}
+
+func buildApp(a *models.App) *proxy.App {
+	token := ""
+	switch a.RegistryType {
+	case models.DockerRegistry:
+	case models.NexusRegistry:
+		token = fmt.Sprintf("Basic %s", base64.EncodeToString(fmt.Sprintf("%s:%s", a.Nexus.Username, a.Nexus.Password)))
+	case models.HarborRegistry:
+		token = fmt.Sprintf("Basic %s", base64.EncodeToString(fmt.Sprintf("%s:%s", a.Nexus.Username, a.Nexus.Password)))
+	}
+	return &proxy.App{
+		Host:                    a.DockerRegistryHost,
+		Token:                   token,
+		Schema:                  a.Schema.SchemaToString(),
+		OAuth2EventHandlerFuncs: a.OAuth2EventHandlerFuncs,
+	}
 }

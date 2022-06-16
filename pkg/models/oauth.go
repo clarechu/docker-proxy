@@ -7,16 +7,16 @@ type OAuth2 struct {
 	RefreshToken string `json:"refresh_token"`
 	// IssuedAt (Optional) The RFC3339-serialized UTC standard time at which a given token was issued.
 	// If issued_at is omitted, the expiration is from when the token exchange completed.
-	IssuedAt string `json:"issued_at"`
+	IssuedAt string `json:"issued_at,omitempty"`
 	// ExpiresIn (REQUIRED) The duration in seconds since the token was issued that it will remain valid.
 	// When omitted, this defaults to 60 seconds.
 	// For compatibility with older clients, a token should never be returned with less than 60 seconds to live.
-	ExpiresIn string `json:"expires_in"`
+	ExpiresIn int64 `json:"expires_in"`
 	// Scope (REQUIRED) The scope granted inside the access token.
 	// This may be the same scope as requested or a subset. This requirement is stronger than specified in
 	// [RFC6749 Section 4.2.2](https://tools.ietf.org/html/rfc6749#section-4.2.2)
 	// by strictly requiring the scope in the return value.
-	Scope string `json:"scope"`
+	Scope string `json:"scope,omitempty"`
 	// AccessToken (REQUIRED) An opaque Bearer token that clients should supply to subsequent requests in the Authorization header.
 	//This token should not be attempted to be parsed or understood by the client but treated as opaque string.
 	AccessToken string `json:"access_token"`

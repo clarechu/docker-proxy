@@ -1,19 +1,17 @@
 package main
 
 import (
-	_ "github.com/clarechu/docker-proxy/pkg/proxy"
-	"github.com/clarechu/docker-proxy/pkg/router"
+	"github.com/clarechu/docker-proxy/example/root"
 	"k8s.io/klog/v2"
 	"os"
 )
 
 func init() {
 	klog.InitFlags(nil)
-	//pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 }
 
 func main() {
-	rootCmd := router.GetRootCmd(os.Args[1:])
+	rootCmd := root.GetRootCmd(os.Args[1:])
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(-1)
 	}
