@@ -25,12 +25,7 @@ import (
 func LogMiddleware(r *mux.Router) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			if strings.Contains(req.RequestURI, "/api") {
-				log.V(3).Infof("METHOD: %+v, URL: %+v, REMOTE IP:%+v", req.Method, req.RequestURI, req.RemoteAddr)
-
-			} else {
-				log.Infof("METHOD: %+v, URL: %+v, REMOTE IP:%+v", req.Method, req.RequestURI, req.RemoteAddr)
-			}
+			log.V(3).Infof("METHOD: %+v, URL: %+v, REMOTE IP:%+v", req.Method, req.RequestURI, req.RemoteAddr)
 			next.ServeHTTP(w, req)
 		})
 	}

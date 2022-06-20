@@ -17,7 +17,7 @@ func NewApp1() *models.App {
 		},
 		Nexus: models.Nexus{
 			Username: "admin",
-			Password: "admin123",
+			Password: "admin1234",
 		},
 		Schema: models.HttpSchema,
 		OAuth2EventHandlerFuncs: models.OAuth2EventHandlerFuncs{

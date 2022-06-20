@@ -52,6 +52,7 @@ func (a *App) PostTokenHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	w.Write(b)
 	w.WriteHeader(http.StatusOK)
+
+	w.Write(b)
 }
