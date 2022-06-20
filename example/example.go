@@ -17,7 +17,7 @@ func NewApp1() *models.App {
 		},
 		Nexus: models.Nexus{
 			Username: "admin",
-			Password: "admin1234",
+			Password: "admin123",
 		},
 		Schema: models.HttpSchema,
 		OAuth2EventHandlerFuncs: models.OAuth2EventHandlerFuncs{
@@ -30,8 +30,8 @@ func NewApp1() *models.App {
 
 // LoginFunc 登陆的function
 func LoginFunc(user *models.User) (*models.OAuth2, error) {
-	password := fmt.Sprintf("Basic %s", base64.EncodeToString("qwer:admin"))
-	if user.Account == "qwer" && user.BasicToken == password {
+	password := fmt.Sprintf("Basic %s", base64.EncodeToString("admin:admin"))
+	if user.Account == "admin" && user.BasicToken == password {
 		return &models.OAuth2{
 			RefreshToken: "kas9Da81Dfa8",
 			AccessToken:  "eyJhbGciOiJFUzI1NiIsInR5",

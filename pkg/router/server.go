@@ -45,9 +45,10 @@ func AddRouter(router *mux.Router, app *proxy.App) {
 	router.PathPrefix("/v2/token").HandlerFunc(app.TokenHandler).Methods(http.MethodGet)
 	router.PathPrefix("/v2/token").HandlerFunc(app.PostTokenHandler).Methods(http.MethodPost)
 
-	router.Path("/v2").HandlerFunc(app.VersionHandler).Methods(http.MethodGet)
+	router.Path("/v2/").HandlerFunc(app.VersionHandler).Methods(http.MethodGet)
 
-	router.PathPrefix("/v2/").HandlerFunc(app.OtherHandler).Methods(http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPatch, http.MethodPut)
+	router.PathPrefix("/v2/").HandlerFunc(app.OtherHandler).Methods(http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodPut)
+	router.PathPrefix("/v2/").HandlerFunc(app.HeadHandler).Methods(http.MethodHead)
 
 }
 
