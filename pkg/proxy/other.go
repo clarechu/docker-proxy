@@ -36,12 +36,14 @@ func (a *App) OtherHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadGateway)
 		return
 	}
-	defer io.Copy(w, res.Body)
-	defer res.Body.Close()
+	res.Request.URL.Host = r.Host
+	res.Request.Host = r.Host
 	for key, value := range res.Header {
 		for _, v := range value {
 			w.Header().Add(key, v)
 		}
 	}
+	defer res.Body.Close()
 	w.WriteHeader(res.StatusCode)
+	io.Copy(w, res.Body)
 }

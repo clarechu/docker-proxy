@@ -21,20 +21,24 @@ func (a *App) HeadHandler(w http.ResponseWriter, r *http.Request) {
 	outReq.Header = map[string][]string{}
 	outReq.URL.Scheme = models.HttpSchema.SchemaToString()
 	res, err := transport.RoundTrip(outReq)
-	if err != nil {
-		log.Errorf("RoundTrip error :%v", err)
-		w.Write([]byte(err.Error()))
-		w.WriteHeader(http.StatusBadGateway)
-		return
-	}
-	res.Request.URL.Host = r.Host
-	res.Request.Host = r.Host
-	defer io.Copy(w, res.Body)
-	defer res.Body.Close()
 	for key, value := range res.Header {
 		for _, v := range value {
 			w.Header().Add(key, v)
 		}
 	}
+	if err != nil {
+		log.Errorf("RoundTrip error :%v", err)
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	res.Request.URL.Host = r.Host
+	res.Request.Host = r.Host
+	if res.StatusCode != http.StatusOK {
+		w.WriteHeader(res.StatusCode)
+		return
+	}
+	defer res.Body.Close()
 	w.WriteHeader(res.StatusCode)
+	io.Copy(w, res.Body)
 }
