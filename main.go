@@ -1,13 +1,17 @@
 package main
 
 import (
+	"flag"
 	"github.com/clarechu/docker-proxy/example/root"
+	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 	"os"
 )
 
 func init() {
 	klog.InitFlags(nil)
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+
 }
 
 func main() {

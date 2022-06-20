@@ -31,6 +31,7 @@ func (a *App) OtherHandler(w http.ResponseWriter, r *http.Request) {
 	outReq.URL.Scheme = models.HttpSchema.SchemaToString()
 	res, err := transport.RoundTrip(outReq)
 	if err != nil {
+		log.Errorf("RoundTrip error :%v", err)
 		w.Write([]byte(err.Error()))
 		w.WriteHeader(http.StatusBadGateway)
 		return
