@@ -19,6 +19,7 @@ import (
 	"github.com/clarechu/docker-proxy/pkg/models"
 	"github.com/clarechu/docker-proxy/pkg/proxy"
 	"github.com/clarechu/docker-proxy/pkg/utils/base64"
+	"github.com/clarechu/docker-proxy/pkg/utils/queue"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	log "k8s.io/klog/v2"
@@ -26,10 +27,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Server struct {
-	sv *http.Server
+	sv    *http.Server
+	queue queue.Instance
+	stop  chan struct{}
 }
 
 type HandlerFunc func(http.ResponseWriter, *http.Request)
@@ -57,31 +61,36 @@ var validate = validator.New()
 func NewServer(root *models.Root) *Server {
 	//文件浏览
 	r := mux.NewRouter()
-	addHTTPMiddleware(r)
 	err := validate.Struct(root.App)
 	if err != nil {
 		panic(err)
 	}
-	AddRouter(r, buildApp(root.App))
+	app := buildApp(root.App)
+	AddRouter(r, app)
+	addHTTPMiddleware(r, app)
 	srv := &http.Server{
-		// Handler: handlers.LoggingHandler(os.Stdout, r),
 		Handler: r,
 		Addr:    fmt.Sprintf(":%d", root.Port),
 	}
 	return &Server{
-		sv: srv,
+		stop:  app.Stop,
+		queue: app.Queue,
+		sv:    srv,
 	}
 }
 
-func addHTTPMiddleware(router *mux.Router) {
+func addHTTPMiddleware(router *mux.Router, app *proxy.App) {
 	router.Use(CORSMethodMiddleware(router))
 	router.Use(LogMiddleware(router))
+	router.Use(app.LoggingHandlerFunc(router))
 }
 
 func (s *Server) Run() {
 	log.V(0).Info("Available on:")
 	log.V(0).Infof("   http://127.0.0.1%s", s.sv.Addr)
 	log.V(0).Infof("Hit CTRL-C to stop the server")
+	go s.queue.Run(s.stop)
+	defer close(s.stop)
 	log.Fatal(s.sv.ListenAndServe())
 }
 
@@ -143,6 +152,9 @@ func buildApp(a *models.App) *proxy.App {
 	return &proxy.App{
 		Host:                    a.DockerRegistryHost,
 		Token:                   token,
+		Stop:                    a.Stop,
+		LoggingHandler:          a.LoggingHandler,
+		Queue:                   queue.NewQueue(5 * time.Second),
 		Schema:                  a.Schema.SchemaToString(),
 		OAuth2EventHandlerFuncs: a.OAuth2EventHandlerFuncs,
 	}

@@ -8,6 +8,8 @@ type App struct {
 	DockerRegistry          Docker                  `json:"dockerRegistry,omitempty"`
 	Schema                  Schema                  `json:"schema,omitempty"`
 	OAuth2EventHandlerFuncs OAuth2EventHandlerFuncs `validate:"required"`
+	LoggingHandler          LoggingHandler          `validate:"required"`
+	Stop                    chan struct{}           `validate:"required"`
 }
 
 type OAuth2EventHandlerFuncs struct {
@@ -15,6 +17,8 @@ type OAuth2EventHandlerFuncs struct {
 	CheckTokenFunc `validate:"required"`
 	PostTokenFunc  `validate:"required"`
 }
+
+type LoggingHandler func(logging *Logging) error
 
 // LoginFunc 登陆的function
 type LoginFunc func(user *User) (*OAuth2, error)

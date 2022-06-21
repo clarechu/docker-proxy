@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/clarechu/docker-proxy/pkg/models"
 	"github.com/clarechu/docker-proxy/pkg/utils/base64"
+	log "k8s.io/klog/v2"
 )
 
 func NewApp1() *models.App {
@@ -19,7 +20,9 @@ func NewApp1() *models.App {
 			Username: "admin",
 			Password: "admin123",
 		},
-		Schema: models.HttpSchema,
+		Schema:         models.HttpSchema,
+		Stop:           make(chan struct{}),
+		LoggingHandler: LoggingHandler,
 		OAuth2EventHandlerFuncs: models.OAuth2EventHandlerFuncs{
 			LoginFunc:      LoginFunc,
 			CheckTokenFunc: CheckTokenFunc,
@@ -59,4 +62,9 @@ func PostTokenFunc(token *models.Token) (*models.OAuth2, error) {
 		}, nil
 	}
 	return nil, errors.New("get oauth error ")
+}
+
+func LoggingHandler(logging *models.Logging) error {
+	log.Infof("logging info path: %s, method: %s, statusCode: %s", logging.URI, logging.Method, logging.HttpStatusCode)
+	return nil
 }
