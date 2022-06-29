@@ -8,7 +8,6 @@ type NexusApp struct {
 	Schema                  Schema                  `json:"schema,omitempty"`
 	OAuth2EventHandlerFuncs OAuth2EventHandlerFuncs `validate:"required"`
 	LoggingHandler          LoggingHandler          `validate:"required"`
-	Stop                    chan struct{}           `validate:"required"`
 }
 
 type App struct {
@@ -20,7 +19,6 @@ type App struct {
 	Schema                  Schema                  `json:"schema,omitempty"`
 	OAuth2EventHandlerFuncs OAuth2EventHandlerFuncs `validate:"required"`
 	LoggingHandler          LoggingHandler          `validate:"required"`
-	Stop                    chan struct{}           `validate:"required"`
 }
 
 type OAuth2EventHandlerFuncs struct {

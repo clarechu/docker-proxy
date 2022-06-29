@@ -17,7 +17,6 @@ func NewApp1() *models.App {
 			Password: "admin123",
 		},
 		Schema:         models.HttpSchema,
-		Stop:           make(chan struct{}),
 		LoggingHandler: LoggingHandler,
 		OAuth2EventHandlerFuncs: models.OAuth2EventHandlerFuncs{
 			LoginFunc:      LoginFunc,

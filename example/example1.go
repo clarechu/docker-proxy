@@ -17,7 +17,6 @@ func NewNexusApp() *models.NexusApp {
 			},
 		},
 		Schema:         models.HttpSchema,
-		Stop:           make(chan struct{}),
 		LoggingHandler: LoggingHandler,
 		OAuth2EventHandlerFuncs: models.OAuth2EventHandlerFuncs{
 			LoginFunc:      LoginFunc,

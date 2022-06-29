@@ -67,13 +67,14 @@ func AddRouter(router *mux.Router, app *proxy.App) {
 var validate = validator.New()
 
 func NewServer(root *models.Root) *Server {
+	stop := make(chan struct{}, 0)
 	//文件浏览
 	r := mux.NewRouter()
 	err := validate.Struct(root.App)
 	if err != nil {
 		panic(err)
 	}
-	app := buildApp(root.App)
+	app := buildApp(root.App, stop)
 	AddRouter(r, app)
 	addHTTPMiddleware(r, app)
 	srv := &http.Server{
@@ -81,20 +82,21 @@ func NewServer(root *models.Root) *Server {
 		Addr:    fmt.Sprintf(":%d", root.Port),
 	}
 	return &Server{
-		stop:  app.Stop,
+		stop:  stop,
 		queue: app.Queue,
 		sv:    srv,
 	}
 }
 
 func NewNexusServer(nexus *models.NexusApp) *NexusServer {
+	stop := make(chan struct{}, 0)
 	//文件浏览
 	err := validate.Struct(nexus)
 	if err != nil {
 		panic(err)
 	}
 	instance := queue.NewQueue(5 * time.Second)
-	apps := buildNexusApp(nexus, instance)
+	apps := buildNexusApp(nexus, instance, stop)
 	servers := make([]*http.Server, 0)
 	for _, app := range apps {
 		r := mux.NewRouter()
@@ -107,7 +109,7 @@ func NewNexusServer(nexus *models.NexusApp) *NexusServer {
 		servers = append(servers, srv)
 	}
 	return &NexusServer{
-		stop:    nexus.Stop,
+		stop:    stop,
 		queue:   instance,
 		servers: servers,
 	}
@@ -136,6 +138,21 @@ func (s *NexusServer) Run() {
 		go log.Fatal(sv.ListenAndServe())
 	}
 	<-s.stop
+}
+
+func (s *NexusServer) Close() {
+	defer close(s.stop)
+	for _, server := range s.servers {
+		err := server.Close()
+		if err != nil {
+			log.Fatalf("close server error:%v", err)
+		}
+	}
+}
+
+func (s *Server) Close() {
+	defer close(s.stop)
+	s.sv.Close()
 }
 
 // spaHandler implements the http.Handler interface, so we can use it
@@ -184,7 +201,7 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
 }
 
-func buildApp(a *models.App) *proxy.App {
+func buildApp(a *models.App, stop chan struct{}) *proxy.App {
 	token := ""
 	switch a.RegistryType {
 	case models.DockerRegistry:
@@ -196,7 +213,7 @@ func buildApp(a *models.App) *proxy.App {
 	return &proxy.App{
 		Host:                    a.DockerRegistryHost,
 		Token:                   token,
-		Stop:                    a.Stop,
+		Stop:                    stop,
 		LoggingHandler:          a.LoggingHandler,
 		Queue:                   queue.NewQueue(5 * time.Second),
 		Schema:                  a.Schema.SchemaToString(),
@@ -204,7 +221,7 @@ func buildApp(a *models.App) *proxy.App {
 	}
 }
 
-func buildNexusApp(a *models.NexusApp, queue queue.Instance) []*proxy.App {
+func buildNexusApp(a *models.NexusApp, queue queue.Instance, stop chan struct{}) []*proxy.App {
 	token := fmt.Sprintf("Basic %s", base64.EncodeToString(fmt.Sprintf("%s:%s", a.Username, a.Password)))
 	apps := make([]*proxy.App, 0)
 	nexusClient := nexus.NewRepository(*a)
@@ -222,7 +239,7 @@ func buildNexusApp(a *models.NexusApp, queue queue.Instance) []*proxy.App {
 			Host:                    fmt.Sprintf("%s:%d", getIP(nexusUrl.Host), port),
 			Port:                    port,
 			Token:                   token,
-			Stop:                    a.Stop,
+			Stop:                    stop,
 			LoggingHandler:          a.LoggingHandler,
 			Queue:                   queue,
 			Schema:                  a.Schema.SchemaToString(),
