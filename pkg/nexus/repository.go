@@ -48,6 +48,9 @@ func (r *Repository) GetPortByDocker() ([]int, error) {
 					return ports, err
 				}
 				port := group.Docker.HTTPPort
+				if port == nil {
+					continue
+				}
 				ports = append(ports, *port)
 				log.Infof("docker group name :%s, port %d", info.Name, port)
 			case RepositoryHostedType:
@@ -57,6 +60,9 @@ func (r *Repository) GetPortByDocker() ([]int, error) {
 					return ports, err
 				}
 				port := hosted.Docker.HTTPPort
+				if port == nil {
+					continue
+				}
 				ports = append(ports, *port)
 
 				log.Infof("docker hosted name :%s, port %d", info.Name, port)
