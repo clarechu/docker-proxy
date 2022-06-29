@@ -124,19 +124,18 @@ func (s *Server) Run() {
 	log.V(0).Infof("   http://127.0.0.1%s", s.sv.Addr)
 	log.V(0).Infof("Hit CTRL-C to stop the server")
 	go s.queue.Run(s.stop)
-	defer close(s.stop)
 	log.Fatal(s.sv.ListenAndServe())
 }
 
 func (s *NexusServer) Run() {
 	go s.queue.Run(s.stop)
-	defer close(s.stop)
 	for _, sv := range s.servers {
 		log.V(0).Info("Available on:")
 		log.V(0).Infof("   http://127.0.0.1%s", sv.Addr)
 		log.V(0).Infof("Hit CTRL-C to stop the server")
-		log.Fatal(sv.ListenAndServe())
+		go log.Fatal(sv.ListenAndServe())
 	}
+	<-s.stop
 }
 
 // spaHandler implements the http.Handler interface, so we can use it
