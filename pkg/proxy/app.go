@@ -7,6 +7,7 @@ import (
 
 type App struct {
 	Host                    string
+	Port                    int
 	Token                   string
 	Schema                  string
 	LoggingHandler          models.LoggingHandler

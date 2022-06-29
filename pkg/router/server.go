@@ -17,6 +17,7 @@ package router
 import (
 	"fmt"
 	"github.com/clarechu/docker-proxy/pkg/models"
+	"github.com/clarechu/docker-proxy/pkg/nexus"
 	"github.com/clarechu/docker-proxy/pkg/proxy"
 	"github.com/clarechu/docker-proxy/pkg/utils/base64"
 	"github.com/clarechu/docker-proxy/pkg/utils/queue"
@@ -24,6 +25,7 @@ import (
 	"github.com/gorilla/mux"
 	log "k8s.io/klog/v2"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,6 +36,12 @@ type Server struct {
 	sv    *http.Server
 	queue queue.Instance
 	stop  chan struct{}
+}
+
+type NexusServer struct {
+	servers []*http.Server
+	queue   queue.Instance
+	stop    chan struct{}
 }
 
 type HandlerFunc func(http.ResponseWriter, *http.Request)
@@ -79,6 +87,32 @@ func NewServer(root *models.Root) *Server {
 	}
 }
 
+func NewNexusServer(nexus *models.NexusApp) *NexusServer {
+	//文件浏览
+	err := validate.Struct(nexus)
+	if err != nil {
+		panic(err)
+	}
+	instance := queue.NewQueue(5 * time.Second)
+	apps := buildNexusApp(nexus, instance)
+	servers := make([]*http.Server, 0)
+	for _, app := range apps {
+		r := mux.NewRouter()
+		AddRouter(r, app)
+		addHTTPMiddleware(r, app)
+		srv := &http.Server{
+			Handler: r,
+			Addr:    fmt.Sprintf(":%d", app.Port),
+		}
+		servers = append(servers, srv)
+	}
+	return &NexusServer{
+		stop:    nexus.Stop,
+		queue:   instance,
+		servers: servers,
+	}
+}
+
 func addHTTPMiddleware(router *mux.Router, app *proxy.App) {
 	router.Use(CORSMethodMiddleware(router))
 	router.Use(LogMiddleware(router))
@@ -92,6 +126,17 @@ func (s *Server) Run() {
 	go s.queue.Run(s.stop)
 	defer close(s.stop)
 	log.Fatal(s.sv.ListenAndServe())
+}
+
+func (s *NexusServer) Run() {
+	go s.queue.Run(s.stop)
+	defer close(s.stop)
+	for _, sv := range s.servers {
+		log.V(0).Info("Available on:")
+		log.V(0).Infof("   http://127.0.0.1%s", sv.Addr)
+		log.V(0).Infof("Hit CTRL-C to stop the server")
+		log.Fatal(sv.ListenAndServe())
+	}
 }
 
 // spaHandler implements the http.Handler interface, so we can use it
@@ -158,4 +203,47 @@ func buildApp(a *models.App) *proxy.App {
 		Schema:                  a.Schema.SchemaToString(),
 		OAuth2EventHandlerFuncs: a.OAuth2EventHandlerFuncs,
 	}
+}
+
+func buildNexusApp(a *models.NexusApp, queue queue.Instance) []*proxy.App {
+	token := fmt.Sprintf("Basic %s", base64.EncodeToString(fmt.Sprintf("%s:%s", a.Username, a.Password)))
+	apps := make([]*proxy.App, 0)
+	nexusClient := nexus.NewRepository(*a)
+	ports, err := nexusClient.GetPortByDocker()
+	if err != nil {
+		log.Fatalf("nexus get port error: %v", err)
+	}
+	for _, port := range ports {
+		nexusUrl, err := url.Parse(a.URL)
+		if err != nil {
+			log.Fatalf("parse url error:%s", err.Error())
+		}
+		log.V(2).Infof("nexus ip :%s", getIP(nexusUrl.Host))
+		app := &proxy.App{
+			Host:                    fmt.Sprintf("%s:%d", getIP(nexusUrl.Host), port),
+			Port:                    port,
+			Token:                   token,
+			Stop:                    a.Stop,
+			LoggingHandler:          a.LoggingHandler,
+			Queue:                   queue,
+			Schema:                  a.Schema.SchemaToString(),
+			OAuth2EventHandlerFuncs: a.OAuth2EventHandlerFuncs,
+		}
+		apps = append(apps, app)
+	}
+	if a.Ports != nil {
+		for _, port := range a.Ports {
+			for _, app := range apps {
+				targetPort := int(port.TargetPort)
+				if targetPort == app.Port {
+					app.Port = int(port.Port)
+				}
+			}
+		}
+	}
+	return apps
+}
+
+func getIP(host string) string {
+	return strings.Split(host, ":")[0]
 }

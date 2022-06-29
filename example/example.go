@@ -10,7 +10,7 @@ import (
 
 func NewApp1() *models.App {
 	return &models.App{
-		DockerRegistryHost: "localhost:9001",
+		DockerRegistryHost: "localhost:8081",
 		RegistryType:       models.NexusRegistry,
 		Nexus: models.Nexus{
 			Username: "admin",

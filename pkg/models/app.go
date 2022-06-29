@@ -1,5 +1,16 @@
 package models
 
+type NexusApp struct {
+	URL                     string                  `json:"url" default:"nexus.com"  validate:"required"`
+	Ports                   []Port                  `json:"ports"`
+	Username                string                  `json:"username,omitempty"`
+	Password                string                  `json:"password,omitempty"`
+	Schema                  Schema                  `json:"schema,omitempty"`
+	OAuth2EventHandlerFuncs OAuth2EventHandlerFuncs `validate:"required"`
+	LoggingHandler          LoggingHandler          `validate:"required"`
+	Stop                    chan struct{}           `validate:"required"`
+}
+
 type App struct {
 	RegistryType            RegistryType            `json:"registryType,omitempty" default:"harbor" validate:"required"`
 	DockerRegistryHost      string                  `json:"dockerRegistryHost" default:"auth.docker.io"  validate:"required"`
