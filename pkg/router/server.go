@@ -237,8 +237,12 @@ func buildNexusApp(a *models.NexusApp, queue queue.Instance, stop chan struct{})
 			log.Fatalf("parse url error:%s", err.Error())
 		}
 		log.V(2).Infof("nexus ip :%s", getIP(nexusUrl.Host))
+		host := getIP(nexusUrl.Host)
+		if a.Host != "" {
+			host = a.Host
+		}
 		app := &proxy.App{
-			Host:                    fmt.Sprintf("%s:%d", getIP(nexusUrl.Host), port),
+			Host:                    fmt.Sprintf("%s:%d", host, port),
 			Port:                    port,
 			Token:                   token,
 			Stop:                    stop,

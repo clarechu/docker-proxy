@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"github.com/clarechu/docker-proxy/pkg/models"
 	"io"
 	log "k8s.io/klog/v2"
 	"net/http"
@@ -19,7 +18,7 @@ func (a *App) HeadHandler(w http.ResponseWriter, r *http.Request) {
 	outReq.URL.Host = outReq.Host
 	// 设置权限头
 	outReq.Header = map[string][]string{}
-	outReq.URL.Scheme = models.HttpSchema.SchemaToString()
+	outReq.URL.Scheme = a.Schema
 	res, err := transport.RoundTrip(outReq)
 	if err != nil {
 		log.Errorf("RoundTrip error :%v", err)

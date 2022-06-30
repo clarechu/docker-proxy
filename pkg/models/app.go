@@ -1,6 +1,7 @@
 package models
 
 type NexusApp struct {
+	Host                    string                  `json:"host"`
 	URL                     string                  `json:"url" default:"nexus.com"  validate:"required"`
 	Ports                   []Port                  `json:"ports"`
 	Username                string                  `json:"username,omitempty"`

@@ -28,7 +28,7 @@ func (a *App) OtherHandler(w http.ResponseWriter, r *http.Request) {
 	// 设置权限头
 	// outReq.Header.Set("Authorization", "Basic YWRtaW46YWRtaW4xMjM=")
 	outReq.Header.Set(models.AuthorizationKey, a.Token)
-	outReq.URL.Scheme = models.HttpSchema.SchemaToString()
+	outReq.URL.Scheme = a.Schema
 	res, err := transport.RoundTrip(outReq)
 	if err != nil {
 		log.Errorf("RoundTrip error :%v", err)
