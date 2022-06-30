@@ -31,7 +31,7 @@ func main() {
 	if len(*host) == 0 {
 		log.Fatalf("Missing required --host parameter")
 	}
-	GenKey()
+	GenKey1()
 	fmt.Fprintf(os.Stdout, `Successfully generated certificates! Here's what you generated.
 
 # Root CA
@@ -60,7 +60,7 @@ server.crt
 `)
 }
 
-func GenKey() {
+func GenKey1() {
 	notBefore := time.Now()
 	notAfter := notBefore.Add(expiry)
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
@@ -82,14 +82,15 @@ func GenKey() {
 		KeyUsage: x509.KeyUsageDigitalSignature |
 			x509.KeyUsageKeyEncipherment | x509.KeyUsageCertSign |
 			x509.KeyUsageCRLSign,
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+		ExtKeyUsage:    []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+		EmailAddresses: []string{"xxx@gmail.com"},
 		Subject: pkix.Name{
 			Country:            []string{"CN"},
 			Locality:           []string{"zhongguancun"},
 			Province:           []string{"Beijing"},
 			OrganizationalUnit: []string{"tect"},
 			Organization:       []string{"paradise"},
-			StreetAddress:      []string{"street", "address", "demo"},
+			StreetAddress:      []string{"street"},
 			PostalCode:         []string{"310000"},
 			CommonName:         "localhost",
 		},
@@ -120,6 +121,7 @@ func GenKey() {
 		},
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
+		EmailAddresses:        []string{"xxx@gmail.com"},
 		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,

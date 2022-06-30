@@ -21,6 +21,7 @@ Tips  Find more information at: https://github.com/clarechu/docker-proxy
 Example:
 `,
 		Run: func(cmd *cobra.Command, args []string) {
+			// cmd.AddCommand()
 			server := router.NewServer(root)
 			server.Run()
 
