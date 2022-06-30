@@ -135,7 +135,9 @@ func (s *NexusServer) Run() {
 		log.V(0).Info("Available on:")
 		log.V(0).Infof("   http://127.0.0.1%s", sv.Addr)
 		log.V(0).Infof("Hit CTRL-C to stop the server")
-		go log.Fatal(sv.ListenAndServe())
+		go func(sv *http.Server) {
+			log.Fatal(sv.ListenAndServe())
+		}(sv)
 	}
 	<-s.stop
 }
