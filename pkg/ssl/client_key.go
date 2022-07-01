@@ -1,4 +1,4 @@
-package main
+package ssl
 
 import (
 	"crypto/ecdsa"
@@ -12,6 +12,8 @@ import (
 	"os"
 	"time"
 )
+
+var expiry = 365 * 24 * time.Hour
 
 func GenClientKey(path string, rootTemplate x509.Certificate, rootKey *ecdsa.PrivateKey) {
 	notBefore := time.Now()

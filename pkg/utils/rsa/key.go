@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	log "k8s.io/klog/v2"
 	"os"
 	"os/exec"
@@ -16,16 +15,15 @@ import (
 func KeyToFile(path, filename string, key *ecdsa.PrivateKey) {
 	file, err := os.Create(filepath.Join(path, filename))
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to write data to cert.key: %s", err)
 	}
 	defer file.Close()
 	b, err := x509.MarshalECPrivateKey(key)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to marshal ECDSA private key: %v", err)
-		os.Exit(2)
+		log.Fatalf("Unable to marshal ECDSA private key: %v", err)
 	}
 	if err := pem.Encode(file, &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}); err != nil {
-		panic(err)
+		log.Fatalf("pem Encode :%v", err)
 	}
 }
 
@@ -49,7 +47,7 @@ func DebugCertToFile(path, filename string, derBytes []byte) {
 
 	file, err := os.Create(filepath.Join(path, filename))
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to open cert.pem for writing: %s", err)
 	}
 	defer file.Close()
 	cmd.Stdout = file
@@ -57,17 +55,17 @@ func DebugCertToFile(path, filename string, derBytes []byte) {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to write data to cert.pem: %s", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		panic(err)
+		log.Fatalf("failed to write data to cert.pem: %s", err)
 	}
 	if _, err := stdin.Write(derBytes); err != nil {
-		panic(err)
+		log.Fatalf("failed to write data to cert.pem: %s", err)
 	}
 	stdin.Close()
 	if err := cmd.Wait(); err != nil {
-		panic(err)
+		log.Fatalf("failed to write data to cert.pem: %s", err)
 	}
 }

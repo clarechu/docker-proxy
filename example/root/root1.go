@@ -1,6 +1,7 @@
 package root
 
 import (
+	"github.com/clarechu/docker-proxy/cmd"
 	"github.com/clarechu/docker-proxy/example"
 	"github.com/clarechu/docker-proxy/pkg/router"
 	"github.com/spf13/cobra"
@@ -22,6 +23,6 @@ Example:
 
 		},
 	}
-	rootCmd.AddCommand(router.VersionCommand())
+	rootCmd.AddCommand(cmd.VersionCommand())
 	return rootCmd
 }

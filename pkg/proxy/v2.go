@@ -10,7 +10,7 @@ import (
 func (a *App) VersionHandler(w http.ResponseWriter, r *http.Request) {
 	log.V(2).Infof("Received request %s %s %s", r.Method, r.Host, r.RemoteAddr)
 	host := r.Host
-	authURL := fmt.Sprintf("%s://%s/v2/token", a.Schema, host)
+	authURL := fmt.Sprintf("%s://%s/v2/token", r.URL.Scheme, host)
 	ok := a.OAuth2EventHandlerFuncs.CheckTokenFunc(r.Header.Get(models.AuthorizationKey))
 	if ok == true {
 		w.WriteHeader(http.StatusOK)
