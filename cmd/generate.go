@@ -56,17 +56,24 @@ Email Address []: 1062186165@qq.com
 				locality, _ := setValueInteractive("Locality Name (eg, city)", "ShenZheng")
 				subject.Locality = []string{locality}
 			}
+			if len(subject.StreetAddress) == 0 {
+				streetAddress, _ := setValueInteractive("Street Address", "NanShan")
+				subject.StreetAddress = []string{streetAddress}
+			}
+			if len(subject.PostalCode) == 0 {
+				postalCode, _ := setValueInteractive("Postal Code", "310000")
+				subject.PostalCode = []string{postalCode}
+			}
 			if len(subject.Organization) == 0 {
 				organization, _ := setValueInteractive("Organization Name (eg, company) [Internet Widgits Pty Ltd]", "demo")
 				subject.Organization = []string{organization}
 			}
 			if len(subject.OrganizationalUnit) == 0 {
 				organizationalUnit, _ := setValueInteractive("Organization Unit Name (eg, section) []", "demo1")
-				subject.Province = []string{organizationalUnit}
+				subject.OrganizationalUnit = []string{organizationalUnit}
 			}
 			if subject.CommonName == "" {
-				commonName, _ := setValueInteractive("Common Name (e.g. server FQDN or YOUR name) []", "")
-				subject.Province = []string{commonName}
+				subject.CommonName, _ = setValueInteractive("Common Name (e.g. server FQDN or YOUR name) []", "")
 			}
 			if emailAddress == "" {
 				emailAddress, _ = setValueInteractive("Email Address []", "")
@@ -97,10 +104,13 @@ Email Address []: 1062186165@qq.com
 				EmailAddresses: []string{emailAddress},
 				Subject:        *subject,
 			}
+			severTemplate := *rootTemplate
+			severTemplate.IsCA = false
+			severTemplate.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}
 			// generate ca root Certificate
 			key := ssl.GenCACertificate(rootTemplate, filepath)
 			// generate server Certificate
-			ssl.GenServerCertificate(rootTemplate, rootTemplate, key, hostname, filepath)
+			ssl.GenServerCertificate(rootTemplate, &severTemplate, key, hostname, filepath)
 		},
 	}
 	addGenFlag(genCmd)
@@ -112,7 +122,9 @@ func addGenFlag(genCmd *cobra.Command) {
 	genCmd.PersistentFlags().StringArrayVar(&subject.Province, "province", []string{}, "State or Province Name (full name) [Some-State]:")
 	genCmd.PersistentFlags().StringArrayVar(&subject.Locality, "locality", []string{}, "Locality Name (eg, city):")
 	genCmd.PersistentFlags().StringArrayVar(&subject.Organization, "organization", []string{}, "Organization Name (eg, company) [Internet Widgits Pty Ltd]:")
-	genCmd.PersistentFlags().StringArrayVar(&subject.OrganizationalUnit, "organizational-unit", []string{""}, "Organization Unit Name (eg, section) []:")
+	genCmd.PersistentFlags().StringArrayVar(&subject.StreetAddress, "street-address", []string{}, "Street Address:")
+	genCmd.PersistentFlags().StringArrayVar(&subject.PostalCode, "postal-code", []string{}, "Postal Code :")
+	genCmd.PersistentFlags().StringArrayVar(&subject.OrganizationalUnit, "organizational-unit", []string{}, "Organization Unit Name (eg, section) []:")
 	genCmd.PersistentFlags().StringVar(&subject.CommonName, "common-name", "", " Common Name (e.g. server FQDN or YOUR name) []:")
 	genCmd.PersistentFlags().StringVar(&emailAddress, "email", "", "Email Address []:")
 	genCmd.PersistentFlags().StringVar(&filepath, "filepath", "./", "CA File Path []:")
@@ -126,7 +138,7 @@ func setValueInteractive(message, value string) (string, error) {
 	}
 	result, err := prompt.Run()
 	if err != nil {
-		panic(err)
+		log.Fatalf(err.Error())
 	}
 	return result, nil
 }

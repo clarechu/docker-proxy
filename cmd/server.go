@@ -34,4 +34,6 @@ docker-proxy server
 
 func addFlag(rootCmd *cobra.Command, root *models.Root) {
 	rootCmd.PersistentFlags().Int32Var(&root.Port, "port", 7777, "proxy server ports")
+	rootCmd.PersistentFlags().StringVar(&root.CertFile, "certfile", "./server.crt", "proxy server ports")
+	rootCmd.PersistentFlags().StringVar(&root.KeyFile, "keyfile", "./server.key", "proxy server ports")
 }

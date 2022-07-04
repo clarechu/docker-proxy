@@ -22,10 +22,6 @@ var (
 	serverCertificate = "server.crt"
 )
 
-var (
-	leafTemplate x509.Certificate
-)
-
 func GenCACertificate(template *x509.Certificate, filepath string) (key *ecdsa.PrivateKey) {
 	rootKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -54,9 +50,9 @@ func GenServerCertificate(root, server *x509.Certificate, rootKey *ecdsa.Private
 	hosts := strings.Split(hostname, ",")
 	for _, h := range hosts {
 		if ip := net.ParseIP(h); ip != nil {
-			leafTemplate.IPAddresses = append(leafTemplate.IPAddresses, ip)
+			server.IPAddresses = append(server.IPAddresses, ip)
 		} else {
-			leafTemplate.DNSNames = append(leafTemplate.DNSNames, h)
+			server.DNSNames = append(server.DNSNames, h)
 		}
 	}
 

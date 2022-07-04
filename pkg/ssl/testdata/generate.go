@@ -1,4 +1,4 @@
-package testdata
+package main
 
 import (
 	"crypto/ecdsa"
@@ -189,12 +189,6 @@ func GenKey1() {
 		os.Exit(2)
 	}
 	rsa.KeyToFile(*path, serverPrivateKey, leafKey)
-
-	serialNumber, err = rand.Int(rand.Reader, serialNumberLimit)
-	if err != nil {
-		fmt.Printf("failed to generate serial number: %s", err)
-		os.Exit(2)
-	}
 
 	hosts := strings.Split(*host, ",")
 	for _, h := range hosts {

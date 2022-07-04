@@ -33,9 +33,11 @@ import (
 )
 
 type Server struct {
-	sv    *http.Server
-	queue queue.Instance
-	stop  chan struct{}
+	sv       *http.Server
+	CertFile string
+	KeyFile  string
+	queue    queue.Instance
+	stop     chan struct{}
 }
 
 type NexusServer struct {
@@ -82,9 +84,11 @@ func NewServer(root *models.Root) *Server {
 		Addr:    fmt.Sprintf(":%d", root.Port),
 	}
 	return &Server{
-		stop:  stop,
-		queue: app.Queue,
-		sv:    srv,
+		CertFile: root.CertFile,
+		KeyFile:  root.KeyFile,
+		stop:     stop,
+		queue:    app.Queue,
+		sv:       srv,
 	}
 }
 
@@ -126,7 +130,7 @@ func (s *Server) Run() {
 	log.V(0).Infof("   http://127.0.0.1%s", s.sv.Addr)
 	log.V(0).Infof("Hit CTRL-C to stop the server")
 	go s.queue.Run(s.stop)
-	log.Fatal(s.sv.ListenAndServe())
+	log.Fatal(s.sv.ListenAndServeTLS(s.CertFile, s.KeyFile))
 }
 
 func (s *NexusServer) Run() {
